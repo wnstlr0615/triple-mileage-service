@@ -25,3 +25,9 @@ data class ReviewEvent(
     @field:NotBlank(message = "placeId must not be blank")
     val placeId: String
 )
+
+enum class Action{
+    ADD,
+    MOD,
+    DELETE
+}

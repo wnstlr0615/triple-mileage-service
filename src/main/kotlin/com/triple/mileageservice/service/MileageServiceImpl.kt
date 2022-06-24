@@ -16,13 +16,14 @@ class MileageServiceImpl(
 
     @Transactional
     override fun add(event: ReviewEvent) {
-        check(
+        require(
             !mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse
                     (event.userId, event.placeId, event.reviewId)
-        ) {"이미 적립된 마일리지 내역이 존재합니다."}
+        ) {"이미 적립된 마일리지 내역입니다."}
 
         val savedPlaceReviewCnt = mileageRepository.countByPlaceId(event.placeId)
-        val point = event.getPoint() + if(savedPlaceReviewCnt > 0) 0 else 1
+        val point = event.getPoint() + if(savedPlaceReviewCnt != 0) 0 else 1
+
         mileageRepository.save(
             event.let {
                 Mileage(
@@ -45,7 +46,7 @@ class MileageServiceImpl(
         TODO("리뷰 이벤트가 DELETE 일 경우 마일리지 관련 비즈니스 로직 구현")
     }
 
-    fun ReviewEvent.getPoint(): Int{
+    private fun ReviewEvent.getPoint(): Int{
         var point = 0
         if(StringUtils.hasText(this.content)){
             point += 1
