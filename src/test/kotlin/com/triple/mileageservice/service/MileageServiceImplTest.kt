@@ -81,7 +81,8 @@ internal class MileageServiceImplTest {
         )
         assertAll(
             { assertDoesNotThrow { mileageService.modify(event) } },
-            { assertThat(mileage.point).isEqualTo(point + 1) }
+            { assertThat(mileage.point).isEqualTo(point + 1) },
+            { assertThat(mileage.contentLength).isEqualTo(event.content.length) }
         )
 
     }
@@ -111,7 +112,8 @@ internal class MileageServiceImplTest {
         )
         assertAll(
             { assertDoesNotThrow { mileageService.modify(event) } },
-            { assertThat(mileage.point).isEqualTo(point) }
+            { assertThat(mileage.point).isEqualTo(point) },
+            { assertThat(mileage.contentLength).isEqualTo(event.content.length) }
         )
     }
     @Test

@@ -30,12 +30,13 @@ class MileageServiceImpl(
         mileageRepository.save(
             event.let {
                 Mileage(
-                    it.userId,
-                    it.reviewId,
-                    it.placeId,
-                    UUID.randomUUID().toString(),
-                    it.attachedPhotoIds.size,
-                    point
+                    userId = it.userId,
+                    reviewId = it.reviewId,
+                    placeId = it.placeId,
+                    mileageId = UUID.randomUUID().toString(),
+                    contentLength = it.content.length,
+                    attachedPhotoCnt = it.attachedPhotoIds.size,
+                    point = point
                 )
             }
         )
@@ -47,7 +48,7 @@ class MileageServiceImpl(
         val mileageListByPlaceID = mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(event.placeId)
         val point = getPoint(event, mileage, mileageListByPlaceID)
 
-        mileage.update(event.attachedPhotoIds.size, point)
+        mileage.update(event.content.length, event.attachedPhotoIds.size, point)
     }
 
     private fun getPoint(event: ReviewEvent, mileage: Mileage, mileageListByPlaceID: List<Mileage>): Int {

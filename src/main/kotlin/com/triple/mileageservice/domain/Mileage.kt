@@ -30,6 +30,9 @@ class Mileage(
     @Column(name = "MILEAGE_ID", nullable = false)
     val mileageId: String,
 
+    @Column(name = "CONTENT_LENGTH", nullable = false)
+    var contentLength: Int = 0,
+
     @Column(name = "ATTACHED_PHOTO_CNT", nullable = false)
     var attachedPhotoCnt: Int = 0,
 
@@ -53,7 +56,8 @@ class Mileage(
         deletedAt = LocalDateTime.now()
     }
 
-    fun update(attachedPhotoCnt: Int, point: Int) {
+    fun update(contentLength: Int, attachedPhotoCnt: Int, point: Int) {
+        this.contentLength = contentLength
         this.attachedPhotoCnt = attachedPhotoCnt
         this.point = point
         updatedAt = LocalDateTime.now()
