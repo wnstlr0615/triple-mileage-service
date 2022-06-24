@@ -45,6 +45,11 @@ class Mileage(
     @Column(name = "UPDATED_AT", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
+    fun delete() {
+        deleted = true
+        deletedAt = LocalDateTime.now()
+    }
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
 }

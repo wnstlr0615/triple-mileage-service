@@ -62,7 +62,7 @@ internal class MileageControllerTest {
             .andExpect(status().isOk)
             .andDo(
                 document(
-                    "review_event_add",
+                    "review_event",
                     requestFields(
                         fieldWithPath("type").type(JsonFieldType.STRING).description("이벤트 타입"),
                         fieldWithPath("action").type(JsonFieldType.STRING).description("리뷰 액션 타입"),
@@ -75,4 +75,6 @@ internal class MileageControllerTest {
                 )
             )
     }
+
+
 }

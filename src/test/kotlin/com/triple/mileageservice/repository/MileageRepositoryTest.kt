@@ -19,11 +19,12 @@ internal class MileageRepositoryTest {
     fun `장소 ID를 가지는 마일리지 적립이 있는지 조회`() {
         val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
 
-        assertThat(mileageRepository.countByPlaceId(placeId)).isEqualTo(0)
+        assertThat(mileageRepository.countByPlaceIdAndDeletedIsFalse(placeId)).isEqualTo(0)
 
         mileageRepository.save(createMileage(placeId = placeId))
+        mileageRepository.save(createMileage(placeId = placeId, deleted = true))
 
-        assertThat(mileageRepository.countByPlaceId(placeId)).isEqualTo(1)
+        assertThat(mileageRepository.countByPlaceIdAndDeletedIsFalse(placeId)).isEqualTo(1)
     }
 
     @CsvSource("false, true", "true, false")
@@ -38,5 +39,19 @@ internal class MileageRepositoryTest {
         val isExist =
             mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)
         assertThat(isExist).isEqualTo(answer)
+    }
+
+    @Test
+    fun `유저ID, 장소ID, 리뷰 ID를 가진 마일리지 조회`() {
+        val reviewId = "240a0658-dc5f-4878-9381-ebb7b2667772"
+        val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
+        val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
+
+        assertThat(mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)).isNull()
+
+        mileageRepository.save(createMileage(reviewId = reviewId, userId = userId, placeId = placeId, deleted = false))
+
+        assertThat(mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)).isNotNull
+
     }
 }

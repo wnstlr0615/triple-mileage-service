@@ -8,9 +8,11 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -34,13 +36,12 @@ internal class MileageServiceImplTest {
             val mileage = createMileage()
 
             every{ mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(any(), any(), any()) } returns false
-            every{ mileageRepository.countByPlaceId(any()) } returns 0
+            every{ mileageRepository.countByPlaceIdAndDeletedIsFalse(any()) } returns 0
             every{ mileageRepository.save(any()) } returns mileage
 
             assertDoesNotThrow { mileageService.add(event) }
             verify(exactly = 1) {mileageRepository.save(any())}
         }
-
         @Test
         fun `리뷰ID 플레이스ID 유저ID로 저장된 유저가 있으면 예외 발생`() {
             val event = createReviewEvent(action = Action.ADD)
@@ -48,9 +49,22 @@ internal class MileageServiceImplTest {
             every{mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(any(), any(), any())} returns true
 
             assertThrows<IllegalStateException> { mileageService.add(event) }
-            verify(inverse = true) {mileageRepository.countByPlaceId(any())}
+            verify(inverse = true) {mileageRepository.countByPlaceIdAndDeletedIsFalse(any())}
             verify(inverse = true) {mileageRepository.save(any())}
         }
+    }
+    @Test
+    fun `리뷰가 삭제되어 기존 마일리지 적립내역 flag 처리`(){
+        val mileage = createMileage(deleted = false)
+
+        every { mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(any(), any(), any()) } returns mileage
+        assertAll(
+            { assertDoesNotThrow { mileageService.delete(createReviewEvent(action = Action.DELETE)) }},
+            { assertThat(mileage.deleted).isTrue },
+            { assertThat(mileage.deletedAt).isNotNull }
+        )
+        verify(exactly = 1) {mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(any(), any(), any())}
+
 
     }
 
