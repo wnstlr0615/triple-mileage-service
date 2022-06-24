@@ -8,7 +8,8 @@ fun createMileage(
     placeId: String = "2e4baf1c-5acb-4efb-a1af-eddada31b00f",
     mileageId: String = "c8200b29-0979-4d3c-8a13-425a74acc998",
     attachedPhotoCnt: Int = 0,
-    point: Int = 0
+    point: Int = 0,
+    deleted: Boolean = false
 ): Mileage {
-    return Mileage(userId, reviewId, placeId, mileageId, attachedPhotoCnt, point)
+    return Mileage(userId, reviewId, placeId, mileageId, attachedPhotoCnt, point, deleted)
 }
