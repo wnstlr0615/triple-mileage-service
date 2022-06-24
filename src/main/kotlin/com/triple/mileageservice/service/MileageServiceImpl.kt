@@ -17,12 +17,15 @@ class MileageServiceImpl(
     @Transactional
     override fun add(event: ReviewEvent) {
         require(
-            !mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse
-                    (event.userId, event.placeId, event.reviewId)
-        ) {"이미 적립된 마일리지 내역입니다."}
+            !mileageRepository.existsByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(
+                event.placeId,
+                event.reviewId,
+                event.userId
+            )
+        ) { "이미 적립된 마일리지 내역입니다." }
 
         val savedPlaceReviewCnt = mileageRepository.countByPlaceIdAndDeletedIsFalse(event.placeId)
-        val point = event.getPoint() + if(savedPlaceReviewCnt != 0) 0 else 1
+        val point = getPoint(event) + if (savedPlaceReviewCnt != 0) 0 else 1
 
         mileageRepository.save(
             event.let {
@@ -38,8 +41,23 @@ class MileageServiceImpl(
         )
     }
 
+    @Transactional
     override fun modify(event: ReviewEvent) {
-        TODO("리뷰 이벤트가 MOD 일 경우 마일리지 관련 비즈니스 로직 구현")
+        val mileage = findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event)
+        val mileageListByPlaceID = mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(event.placeId)
+        val point = getPoint(event, mileage, mileageListByPlaceID)
+
+        mileage.update(event.attachedPhotoIds.size, point)
+    }
+
+    private fun getPoint(event: ReviewEvent, mileage: Mileage, mileageListByPlaceID: List<Mileage>): Int {
+        var point = 0
+
+        if (mileageListByPlaceID.isEmpty() || mileageListByPlaceID[0].reviewId == mileage.reviewId) {
+            point += 1
+        }
+        point += getPoint(event)
+        return point
     }
 
     @Transactional
@@ -49,18 +67,18 @@ class MileageServiceImpl(
     }
 
     private fun findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event: ReviewEvent) =
-        (mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(
-            event.userId,
+        (mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(
             event.placeId,
-            event.reviewId
+            event.reviewId,
+            event.userId
         ) ?: throw IllegalArgumentException("해당 리뷰에 마일리지 적립 내역이 없습니다."))
 
-    private fun ReviewEvent.getPoint(): Int{
+    private fun getPoint(event: ReviewEvent): Int {
         var point = 0
-        if(StringUtils.hasText(this.content)){
+        if (StringUtils.hasText(event.content)) {
             point += 1
         }
-        if(this.attachedPhotoIds.isNotEmpty()){
+        if (event.attachedPhotoIds.isNotEmpty()) {
             point += 1
         }
         return point

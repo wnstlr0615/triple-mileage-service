@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface MileageRepository : JpaRepository<Mileage, Long> {
     fun countByPlaceIdAndDeletedIsFalse(placeId: String): Int
-    fun existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId: String, placeId: String, reviewId: String): Boolean
-    fun findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId: String, placeId: String, reviewId: String): Mileage?
+    fun existsByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId: String, reviewId: String, userId: String): Boolean
+    fun findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId: String, reviewId: String, userId: String): Mileage?
+    fun findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(placeId: String): List<Mileage>
 }
 

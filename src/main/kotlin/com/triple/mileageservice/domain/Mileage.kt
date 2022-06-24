@@ -12,7 +12,10 @@ import javax.persistence.Table
 @Entity
 @Table(
     name = "MILEAGE",
-    indexes = [Index(name = "", columnList = "PLACE_ID, REVIEW_ID, USER_ID")]
+    indexes = [
+        Index(name = "place_index", columnList = "PLACE_ID"),
+        Index(name = "place_review_user_index", columnList = "PLACE_ID, REVIEW_ID, USER_ID"),
+    ]
 )
 class Mileage(
     @Column(name = "USER_ID", nullable = false)
@@ -48,6 +51,12 @@ class Mileage(
     fun delete() {
         deleted = true
         deletedAt = LocalDateTime.now()
+    }
+
+    fun update(attachedPhotoCnt: Int, point: Int) {
+        this.attachedPhotoCnt = attachedPhotoCnt
+        this.point = point
+        updatedAt = LocalDateTime.now()
     }
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

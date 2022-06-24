@@ -3,11 +3,13 @@ package com.triple.mileageservice.repository
 import com.triple.mileageservice.createMileage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
+import java.lang.Thread.sleep
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -37,7 +39,7 @@ internal class MileageRepositoryTest {
         mileageRepository.save(createMileage(reviewId = reviewId, userId = userId, placeId = placeId, deleted = deleted))
 
         val isExist =
-            mileageRepository.existsByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)
+            mileageRepository.existsByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId, reviewId, userId)
         assertThat(isExist).isEqualTo(answer)
     }
 
@@ -47,11 +49,34 @@ internal class MileageRepositoryTest {
         val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
         val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
 
-        assertThat(mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)).isNull()
+        assertThat(mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId, reviewId, userId)).isNull()
 
         mileageRepository.save(createMileage(reviewId = reviewId, userId = userId, placeId = placeId, deleted = false))
 
-        assertThat(mileageRepository.findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(userId, placeId, reviewId)).isNotNull
+        assertThat(mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId, reviewId, userId)).isNotNull
+    }
+
+    @Test
+    fun `장소ID로 등록된 마일리지 내역을 먼저 등록된 순으로 조회`() {
+        val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
+
+        mileageRepository.save(createMileage(userId = "user1" ,placeId = placeId, deleted = true))
+        sleep(100)
+        mileageRepository.save(createMileage(userId = "user2", placeId = placeId, deleted = false))
+        sleep(100)
+        mileageRepository.save(createMileage(userId = "user3", placeId = placeId, deleted = false))
+        sleep(100)
+        mileageRepository.save(createMileage(userId = "user4", placeId = placeId, deleted = false))
+
+        val mileageList = mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(placeId)
+
+        assertAll(
+            { assertThat(mileageList.size).isEqualTo(3) },
+            { assertThat(mileageList[0].createdAt.isBefore(mileageList[1].createdAt)).isTrue() },
+            { assertThat(mileageList[1].createdAt.isBefore(mileageList[2].createdAt)).isTrue() }
+        )
+
+
 
     }
 }
