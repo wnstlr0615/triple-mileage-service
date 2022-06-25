@@ -43,3 +43,6 @@ create table mileage_history
 create index USER_ID_INDEX
     on mileage_history (user_id);
 
+create index USER_ID_PLACE_ID_REVIEW_ID_INDEX
+    on mileage_history (user_id, place_id, review_id);
+

@@ -12,7 +12,10 @@ import javax.persistence.Table
 @Entity
 @Table(
     name = "MILEAGE_HISTORY",
-    indexes = [Index(name = "USER_ID_INDEX", columnList = "USER_ID")]
+    indexes = [
+        Index(name = "USER_ID_INDEX", columnList = "USER_ID"),
+        Index(name = "USER_ID_PLACE_ID_REVIEW_ID_INDEX", columnList = "USER_ID, PLACE_ID, REVIEW_ID")
+    ]
 )
 class MileageHistory(
     @Column(name = "MILEAGE_ID", nullable = false)

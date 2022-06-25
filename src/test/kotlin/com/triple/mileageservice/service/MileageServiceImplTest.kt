@@ -161,9 +161,7 @@ internal class MileageServiceImplTest {
         val reviewId = "review1"
         val event = createReviewEvent(action = Action.MOD, content = "좋아요!", attachedPhotoIds = listOf("aaa111", "bbb11"))
 
-        every {
-            mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any())
-        } returns createMileage(
+        val mileage = createMileage(
             placeId = placeId,
             userId = userId,
             reviewId = reviewId,
@@ -172,17 +170,13 @@ internal class MileageServiceImplTest {
             point = 1
         )
         every {
+            mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any())
+        } returns mileage
+        every {
             mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(any())
         } returns listOf(
             createMileage(placeId = placeId, userId = "user2", reviewId = "review2", attachedPhotoCnt = 3, point = 3),
-            createMileage(
-                placeId = placeId,
-                userId = userId,
-                reviewId = reviewId,
-                attachedPhotoCnt = 2,
-                contentLength = 0,
-                point = 1
-            ),
+            mileage,
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
@@ -201,9 +195,7 @@ internal class MileageServiceImplTest {
         val reviewId = "review1"
         val event = createReviewEvent(action = Action.MOD, content = "", attachedPhotoIds = listOf("aaa111", "bbb11"))
 
-        every {
-            mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any())
-        } returns createMileage(
+        val mileage = createMileage(
             placeId = placeId,
             userId = userId,
             reviewId = reviewId,
@@ -212,17 +204,13 @@ internal class MileageServiceImplTest {
             point = 1
         )
         every {
+            mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any())
+        } returns mileage
+        every {
             mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(any())
         } returns listOf(
             createMileage(placeId = placeId, userId = "user2", reviewId = "review2", attachedPhotoCnt = 3, point = 3),
-            createMileage(
-                placeId = placeId,
-                userId = userId,
-                reviewId = reviewId,
-                attachedPhotoCnt = 2,
-                contentLength = 0,
-                point = 1
-            ),
+            mileage,
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
