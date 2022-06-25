@@ -1,7 +1,9 @@
 package com.triple.mileageservice.service
 
 import com.triple.mileageservice.domain.Mileage
+import com.triple.mileageservice.domain.MileageHistory
 import com.triple.mileageservice.dto.ReviewEvent
+import com.triple.mileageservice.repository.MileageHistoryRepository
 import com.triple.mileageservice.repository.MileageRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,7 +13,8 @@ import java.util.*
 @Service
 @Transactional(readOnly = true)
 class MileageServiceImpl(
-    val mileageRepository: MileageRepository
+    val mileageRepository: MileageRepository,
+    val mileageHistoryRepository: MileageHistoryRepository
 ) : MileageService {
 
     @Transactional
@@ -27,7 +30,7 @@ class MileageServiceImpl(
         val savedPlaceReviewCnt = mileageRepository.countByPlaceIdAndDeletedIsFalse(event.placeId)
         val point = getPoint(event) + if (savedPlaceReviewCnt != 0) 0 else 1
 
-        mileageRepository.save(
+        val saveMileage = mileageRepository.save(
             event.let {
                 Mileage(
                     userId = it.userId,
@@ -40,6 +43,28 @@ class MileageServiceImpl(
                 )
             }
         )
+
+        mileageRepository.flush()
+
+        val curUserPoint = mileageHistoryRepository
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+
+        val mileageHistory = saveMileage.let{
+            MileageHistory(
+                mileageId = it.mileageId,
+                reviewId = it.reviewId,
+                placeId = it.placeId,
+                userId = it.userId,
+                action = "PLUS",
+                point = saveMileage.point,
+                description = "새로운 리뷰 작성",
+                contentLength = it.contentLength,
+                attachedPhotoCnt = it.attachedPhotoCnt,
+                curUserPoint + it.point
+            )
+        }
+        mileageHistoryRepository.save(mileageHistory)
+
     }
 
     @Transactional
@@ -48,7 +73,57 @@ class MileageServiceImpl(
         val mileageListByPlaceID = mileageRepository.findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(event.placeId)
         val point = getPoint(event, mileage, mileageListByPlaceID)
 
+        val curUserPoint = mileageHistoryRepository
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+
+        if(mileage.point != point){
+            val action = if(mileage.point > point) "MINUS" else "PLUS"
+            val pointGap = Math.abs(mileage.point - point)
+
+            val mileageHistory = mileage.let{
+                MileageHistory(
+                    mileageId = it.mileageId,
+                    reviewId = it.reviewId,
+                    placeId = it.placeId,
+                    userId = it.userId,
+                    action = action,
+                    point = pointGap,
+                    description = "리뷰 수정",
+                    contentLength = it.contentLength,
+                    attachedPhotoCnt = it.attachedPhotoCnt,
+                    curUserPoint + point - mileage.point
+                )
+            }
+            mileageHistoryRepository.save(mileageHistory)
+        }
         mileage.update(event.content.length, event.attachedPhotoIds.size, point)
+
+    }
+
+    @Transactional
+    override fun delete(event: ReviewEvent) {
+        val mileage = findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event)
+        mileage.delete()
+
+        val curUserPoint = mileageHistoryRepository
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+
+        val mileageHistory = mileage.let {
+            MileageHistory(
+                mileageId = it.mileageId,
+                reviewId = it.reviewId,
+                placeId = it.placeId,
+                userId = it.userId,
+                action = "MINUS",
+                point = mileage.point,
+                description = "리뷰 삭제",
+                contentLength = it.contentLength,
+                attachedPhotoCnt = it.attachedPhotoCnt,
+                curUserPoint - mileage.point
+            )
+        }
+
+        mileageHistoryRepository.save(mileageHistory)
     }
 
     private fun getPoint(event: ReviewEvent, mileage: Mileage, mileageListByPlaceID: List<Mileage>): Int {
@@ -59,12 +134,6 @@ class MileageServiceImpl(
         }
         point += getPoint(event)
         return point
-    }
-
-    @Transactional
-    override fun delete(event: ReviewEvent) {
-        val mileage = findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event)
-        mileage.delete()
     }
 
     private fun findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event: ReviewEvent) =
