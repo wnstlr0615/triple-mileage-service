@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import com.triple.mileageservice.config.RestDocsConfiguration
 import com.triple.mileageservice.createReviewEvent
+import com.triple.mileageservice.createUserMileageResponse
 import com.triple.mileageservice.dto.Action
 import com.triple.mileageservice.service.MileageServiceImpl
 import io.mockk.Runs
@@ -20,9 +21,14 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
+import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
+import org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath
+import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
+import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -72,6 +78,30 @@ internal class MileageControllerTest {
                         fieldWithPath("attachedPhotoIds").type(JsonFieldType.ARRAY).description("첨부된 이미지 Id"),
                         fieldWithPath("userId").type(JsonFieldType.STRING).description("리뷰를 작성한 사용자 Id"),
                         fieldWithPath("placeId").type(JsonFieldType.STRING).description("리뷰를 작성한 장송 Id"),
+                    )
+                )
+            )
+    }
+    @Test
+    fun `사용자 마일리지 조회`() {
+        val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
+
+        every { mileageService.getUserMileage(any()) } returns createUserMileageResponse(userId, 10)
+        mvc.perform(
+            RestDocumentationRequestBuilders.get("/users/{userId}/mileage", userId)
+        ).andDo(print())
+            .andExpect { status().isOk }
+            .andDo(
+                document(
+                    "get_user_mileage",
+                    pathParameters(
+                        parameterWithName("userId").description("사용자 ID")
+                    ),
+                    responseFields(
+                        fieldWithPath("message").description("에러 시 메시지"),
+                        subsectionWithPath("body").description("응답"),
+                        fieldWithPath("body.userId").type(JsonFieldType.STRING).description("사용자 ID"),
+                        fieldWithPath("body.mileage").type(JsonFieldType.NUMBER).description("사용자 현재 마일리지")
                     )
                 )
             )

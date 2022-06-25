@@ -2,6 +2,7 @@ package com.triple.mileageservice
 
 import com.triple.mileageservice.domain.Mileage
 import com.triple.mileageservice.domain.MileageHistory
+import com.triple.mileageservice.dto.UserMileageResponse
 
 fun createMileage(
     reviewId: String = "240a0658-dc5f-4878-9381-ebb7b2667772",
@@ -35,7 +36,7 @@ fun createMileageHistory(
     contentLength: Int = 10,
     point: Int = 0,
     description: String = "",
-    userCurrentPoint: Int = 0
+    curUserPoint: Int = 0
 ): MileageHistory {
     return MileageHistory(
         mileageId = mileageId,
@@ -47,6 +48,13 @@ fun createMileageHistory(
         contentLength = contentLength,
         attachedPhotoCnt = attachedPhotoCnt,
         description = description,
-        curUserPoint = userCurrentPoint
+        curUserPoint = curUserPoint
     )
+}
+
+fun createUserMileageResponse(
+    userId: String = "3ede0ef2-92b7-4817-a5f3-0c575361f745",
+    mileage: Int = 0
+): UserMileageResponse {
+    return UserMileageResponse(userId, mileage)
 }

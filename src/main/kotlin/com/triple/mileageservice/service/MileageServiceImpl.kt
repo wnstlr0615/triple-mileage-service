@@ -3,6 +3,7 @@ package com.triple.mileageservice.service
 import com.triple.mileageservice.domain.Mileage
 import com.triple.mileageservice.domain.MileageHistory
 import com.triple.mileageservice.dto.ReviewEvent
+import com.triple.mileageservice.dto.UserMileageResponse
 import com.triple.mileageservice.repository.MileageHistoryRepository
 import com.triple.mileageservice.repository.MileageRepository
 import org.springframework.stereotype.Service
@@ -89,8 +90,8 @@ class MileageServiceImpl(
                     state = action,
                     point = pointGap,
                     description = "리뷰 수정",
-                    contentLength = it.contentLength,
-                    attachedPhotoCnt = it.attachedPhotoCnt,
+                    contentLength = event.content.length,
+                    attachedPhotoCnt = event.attachedPhotoIds.size,
                     curUserPoint + point - mileage.point
                 )
             }
@@ -123,6 +124,11 @@ class MileageServiceImpl(
         }
 
         mileageHistoryRepository.save(mileageHistory)
+    }
+
+    override fun getUserMileage(userId: String): UserMileageResponse {
+        val curUserPoint = mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(userId)?.curUserPoint ?: 0
+        return UserMileageResponse(userId, curUserPoint)
     }
 
     private fun getPoint(event: ReviewEvent, mileage: Mileage, mileageListByPlaceID: List<Mileage>): Int {

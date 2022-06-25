@@ -49,7 +49,7 @@ internal class MileageServiceImplTest {
         every { mileageRepository.flush() } just Runs
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
         every { mileageHistoryRepository.save(any()) } returns createMileageHistory()
 
         assertDoesNotThrow { mileageService.add(event) }
@@ -96,7 +96,7 @@ internal class MileageServiceImplTest {
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
         every { mileageHistoryRepository.save(any()) } returns createMileageHistory()
 
         assertAll(
@@ -138,7 +138,7 @@ internal class MileageServiceImplTest {
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
         every { mileageHistoryRepository.save(any()) } returns createMileageHistory()
 
         assertAll(
@@ -186,7 +186,7 @@ internal class MileageServiceImplTest {
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
         every { mileageHistoryRepository.save(any()) } returns createMileageHistory()
 
         assertDoesNotThrow { mileageService.modify(event) }
@@ -226,7 +226,7 @@ internal class MileageServiceImplTest {
         )
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
 
         assertDoesNotThrow { mileageService.modify(event) }
         verify(inverse = true) { mileageHistoryRepository.save(any()) }
@@ -250,7 +250,7 @@ internal class MileageServiceImplTest {
         every { mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any()) } returns mileage
         every {
             mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
-        } returns createMileageHistory(userCurrentPoint = 10)
+        } returns createMileageHistory(curUserPoint = 10)
         every { mileageHistoryRepository.save(any()) } returns createMileageHistory()
         assertAll(
             { assertDoesNotThrow { mileageService.delete(createReviewEvent(action = Action.DELETE)) } },
@@ -259,6 +259,36 @@ internal class MileageServiceImplTest {
         )
         verify(exactly = 1) { mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(any(), any(), any()) }
         verify(exactly = 1) { mileageHistoryRepository.save(any()) }
+    }
+
+    @Test
+    @DisplayName("[사용자 마일리지 조회] 마일리지 히스토리에 적립내역이 있으면 사용자의 현재 마일리지 를 조회한다.")
+    fun `마일리지 히스토리에 적립내역이 있으면 사용자의 현재 마일리지 를 조회한다 `() {
+        val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
+        every {
+            mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
+        } returns createMileageHistory(curUserPoint = 100, userId = userId)
+
+        val userMileage = mileageService.getUserMileage(userId)
+        assertAll(
+            { assertThat(userMileage.userId).isEqualTo(userId) },
+            { assertThat(userMileage.mileage).isEqualTo(100) },
+        )
+    }
+
+    @Test
+    @DisplayName("[사용자 마일리지 조회] 마일리지 적립 기록이 없으면 0을 반환 한다.")
+    fun `마일리지 적립 기록이 없으면 0을 반환 한다`() {
+        val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
+        every {
+            mileageHistoryRepository.findFirstAllByUserIdOrderByCreatedAtDesc(any())
+        } returns null
+
+        val userMileage = mileageService.getUserMileage(userId)
+        assertAll(
+            { assertThat(userMileage.userId).isEqualTo(userId) },
+            { assertThat(userMileage.mileage).isEqualTo(0) },
+        )
     }
 
     companion object {
