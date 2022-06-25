@@ -5,10 +5,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import java.util.stream.Stream
 import javax.validation.Validation
 
 @SpringBootTest
+@ActiveProfiles("test")
 internal class ReviewEventTest {
 
     @ParameterizedTest
