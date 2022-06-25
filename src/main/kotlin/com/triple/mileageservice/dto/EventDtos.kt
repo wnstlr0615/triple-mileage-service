@@ -26,7 +26,7 @@ data class ReviewEvent(
     val placeId: String
 )
 
-enum class Action{
+enum class Action {
     ADD,
     MOD,
     DELETE

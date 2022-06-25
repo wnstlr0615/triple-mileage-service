@@ -31,7 +31,7 @@ internal class MileageRepositoryTest {
 
     @CsvSource("false, true", "true, false")
     @ParameterizedTest
-    fun `유저ID, 장소ID, 리뷰 ID를 통해 마일리지 적립 유무 확인`(deleted: Boolean, answer: Boolean){
+    fun `유저ID, 장소ID, 리뷰 ID를 통해 마일리지 적립 유무 확인`(deleted: Boolean, answer: Boolean) {
         val reviewId = "240a0658-dc5f-4878-9381-ebb7b2667772"
         val userId = "3ede0ef2-92b7-4817-a5f3-0c575361f745"
         val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
@@ -60,7 +60,7 @@ internal class MileageRepositoryTest {
     fun `장소ID로 등록된 마일리지 내역을 먼저 등록된 순으로 조회`() {
         val placeId = "2e4baf1c-5acb-4efb-a1af-eddada31b00f"
 
-        mileageRepository.save(createMileage(userId = "user1" ,placeId = placeId, deleted = true))
+        mileageRepository.save(createMileage(userId = "user1", placeId = placeId, deleted = true))
         sleep(100)
         mileageRepository.save(createMileage(userId = "user2", placeId = placeId, deleted = false))
         sleep(100)
@@ -75,8 +75,5 @@ internal class MileageRepositoryTest {
             { assertThat(mileageList[0].createdAt.isBefore(mileageList[1].createdAt)).isTrue() },
             { assertThat(mileageList[1].createdAt.isBefore(mileageList[2].createdAt)).isTrue() }
         )
-
-
-
     }
 }

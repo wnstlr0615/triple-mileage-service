@@ -21,7 +21,8 @@ fun createMileage(
         contentLength = contentLength,
         attachedPhotoCnt = attachedPhotoCnt,
         point = point,
-        deleted = deleted)
+        deleted = deleted
+    )
 }
 
 fun createMileageHistory(
@@ -41,11 +42,11 @@ fun createMileageHistory(
         reviewId = reviewId,
         placeId = placeId,
         userId = userId,
-        action = action,
+        state = action,
         point = point,
         contentLength = contentLength,
         attachedPhotoCnt = attachedPhotoCnt,
         description = description,
-        userCurrentPoint = userCurrentPoint
+        curUserPoint = userCurrentPoint
     )
 }

@@ -16,8 +16,8 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 allOpen {
     annotation("javax.persistence.Entity")
-    annotation ("javax.persistence.MappedSuperclass")
-    annotation ("javax.persistence.Embeddable")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
 }
 
 repositories {
@@ -39,7 +39,6 @@ dependencies {
     }
     testImplementation("com.ninja-squad:springmockk:2.0.3")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
-
 }
 
 tasks.withType<KotlinCompile> {

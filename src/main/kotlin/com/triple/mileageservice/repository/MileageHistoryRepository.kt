@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface MileageHistoryRepository : JpaRepository<MileageHistory, Long> {
     fun findFirstAllByUserIdOrderByCreatedAtDesc(userId: String): MileageHistory?
+    fun findByUserIdAndPlaceIdAndReviewIdOrderByCreatedAtDesc(userId: String, placeId: String, reviewId: String): List<MileageHistory>
 }

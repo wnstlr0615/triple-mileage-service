@@ -8,7 +8,8 @@ import com.triple.mileageservice.repository.MileageRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StringUtils
-import java.util.*
+import java.util.UUID
+import kotlin.math.abs
 
 @Service
 @Transactional(readOnly = true)
@@ -47,15 +48,15 @@ class MileageServiceImpl(
         mileageRepository.flush()
 
         val curUserPoint = mileageHistoryRepository
-            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.curUserPoint ?: 0
 
-        val mileageHistory = saveMileage.let{
+        val mileageHistory = saveMileage.let {
             MileageHistory(
                 mileageId = it.mileageId,
                 reviewId = it.reviewId,
                 placeId = it.placeId,
                 userId = it.userId,
-                action = "PLUS",
+                state = "PLUS",
                 point = saveMileage.point,
                 description = "새로운 리뷰 작성",
                 contentLength = it.contentLength,
@@ -64,7 +65,6 @@ class MileageServiceImpl(
             )
         }
         mileageHistoryRepository.save(mileageHistory)
-
     }
 
     @Transactional
@@ -74,19 +74,19 @@ class MileageServiceImpl(
         val point = getPoint(event, mileage, mileageListByPlaceID)
 
         val curUserPoint = mileageHistoryRepository
-            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.curUserPoint ?: 0
 
-        if(mileage.point != point){
-            val action = if(mileage.point > point) "MINUS" else "PLUS"
-            val pointGap = Math.abs(mileage.point - point)
+        if (mileage.point != point) {
+            val action = if (mileage.point > point) "MINUS" else "PLUS"
+            val pointGap = abs(mileage.point - point)
 
-            val mileageHistory = mileage.let{
+            val mileageHistory = mileage.let {
                 MileageHistory(
                     mileageId = it.mileageId,
                     reviewId = it.reviewId,
                     placeId = it.placeId,
                     userId = it.userId,
-                    action = action,
+                    state = action,
                     point = pointGap,
                     description = "리뷰 수정",
                     contentLength = it.contentLength,
@@ -97,7 +97,6 @@ class MileageServiceImpl(
             mileageHistoryRepository.save(mileageHistory)
         }
         mileage.update(event.content.length, event.attachedPhotoIds.size, point)
-
     }
 
     @Transactional
@@ -106,7 +105,7 @@ class MileageServiceImpl(
         mileage.delete()
 
         val curUserPoint = mileageHistoryRepository
-            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.userCurrentPoint ?: 0
+            .findFirstAllByUserIdOrderByCreatedAtDesc(event.userId)?.curUserPoint ?: 0
 
         val mileageHistory = mileage.let {
             MileageHistory(
@@ -114,7 +113,7 @@ class MileageServiceImpl(
                 reviewId = it.reviewId,
                 placeId = it.placeId,
                 userId = it.userId,
-                action = "MINUS",
+                state = "MINUS",
                 point = mileage.point,
                 description = "리뷰 삭제",
                 contentLength = it.contentLength,
@@ -137,11 +136,13 @@ class MileageServiceImpl(
     }
 
     private fun findByUserIdAndPlaceIdAndReviewIdAndDeletedIsFalse(event: ReviewEvent) =
-        (mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(
-            event.placeId,
-            event.reviewId,
-            event.userId
-        ) ?: throw IllegalArgumentException("해당 리뷰에 마일리지 적립 내역이 없습니다."))
+        (
+            mileageRepository.findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(
+                event.placeId,
+                event.reviewId,
+                event.userId
+            ) ?: throw IllegalArgumentException("해당 리뷰에 마일리지 적립 내역이 없습니다.")
+            )
 
     private fun getPoint(event: ReviewEvent): Int {
         var point = 0

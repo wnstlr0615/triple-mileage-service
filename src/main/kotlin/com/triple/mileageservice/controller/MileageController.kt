@@ -15,11 +15,11 @@ class MileageController(
     @PostMapping("/events")
     fun reviewEvent(
         @Valid @RequestBody event: ReviewEvent
-    ): ResponseEntity<Unit>{
-        when(event.action){
-            "ADD" -> {mileageService.add(event)}
-            "MOD" -> {mileageService.modify(event)}
-            "DELETE" -> {mileageService.delete(event)}
+    ): ResponseEntity<Unit> {
+        when (event.action) {
+            "ADD" -> { mileageService.add(event) }
+            "MOD" -> { mileageService.modify(event) }
+            "DELETE" -> { mileageService.delete(event) }
         }
         return ResponseEntity.ok().build()
     }

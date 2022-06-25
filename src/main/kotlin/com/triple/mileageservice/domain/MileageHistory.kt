@@ -27,8 +27,8 @@ class MileageHistory(
     @Column(name = "USER_ID", nullable = false)
     val userId: String,
 
-    @Column(name = "ACTION", nullable = false)
-    val action: String,
+    @Column(name = "STATE", nullable = false)
+    val state: String,
 
     @Column(name = "POINT", nullable = false)
     val point: Int,
@@ -43,7 +43,7 @@ class MileageHistory(
     val attachedPhotoCnt: Int,
 
     @Column(name = "USER_CURRENT_POINT", nullable = false)
-    val userCurrentPoint: Int,
+    val curUserPoint: Int,
 
     @Column(name = "CREATED_AT", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()

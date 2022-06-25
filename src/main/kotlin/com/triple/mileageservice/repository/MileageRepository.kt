@@ -9,4 +9,3 @@ interface MileageRepository : JpaRepository<Mileage, Long> {
     fun findByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(placeId: String, reviewId: String, userId: String): Mileage?
     fun findAllByPlaceIdAndDeletedIsFalseOrderByCreatedAtAsc(placeId: String): List<Mileage>
 }
-

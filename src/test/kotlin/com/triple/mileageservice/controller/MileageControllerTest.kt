@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @ExtendWith(value = [RestDocumentationExtension::class])
 @WebMvcTest(controllers = [MileageController::class])
 @AutoConfigureRestDocs
-@AutoConfigureMockMvc(print =  MockMvcPrint.LOG_DEBUG)
+@AutoConfigureMockMvc(print = MockMvcPrint.LOG_DEBUG)
 internal class MileageControllerTest {
     @Autowired
     lateinit var mapper: ObjectMapper
@@ -46,18 +46,19 @@ internal class MileageControllerTest {
     private lateinit var mileageService: MileageServiceImpl
 
     @Test
-    fun `새로운 리뷰 작성 이벤트가 올 경우 신규 마일리지 적립`(){
+    fun `새로운 리뷰 작성 이벤트가 올 경우 신규 마일리지 적립`() {
         val reviewEvent = createReviewEvent(action = Action.ADD)
 
         every { mileageService.add(reviewEvent) } just Runs
 
-        mvc.perform(post("/events")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(
-                mapper.writeValueAsString(
-                    reviewEvent
+        mvc.perform(
+            post("/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(
+                        reviewEvent
+                    )
                 )
-            )
         ).andDo(print())
             .andExpect(status().isOk)
             .andDo(
@@ -75,6 +76,4 @@ internal class MileageControllerTest {
                 )
             )
     }
-
-
 }
