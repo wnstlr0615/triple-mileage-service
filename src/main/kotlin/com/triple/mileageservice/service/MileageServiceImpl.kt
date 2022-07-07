@@ -1,5 +1,6 @@
 package com.triple.mileageservice.service
 
+import com.triple.mileageservice.aop.TimeCheck
 import com.triple.mileageservice.domain.Mileage
 import com.triple.mileageservice.domain.MileageHistory
 import com.triple.mileageservice.dto.ReviewEvent
@@ -9,7 +10,7 @@ import com.triple.mileageservice.repository.MileageRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StringUtils
-import java.util.UUID
+import java.util.*
 import kotlin.math.abs
 
 @Service
@@ -20,6 +21,7 @@ class MileageServiceImpl(
 ) : MileageService {
 
     @Transactional
+    @TimeCheck
     override fun add(event: ReviewEvent) {
         require(
             !mileageRepository.existsByPlaceIdAndReviewIdAndUserIdAndDeletedIsFalse(
