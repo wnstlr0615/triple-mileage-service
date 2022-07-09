@@ -17,8 +17,7 @@ class TimeCheckAop {
         stopWatch.start()
         val proceed = joinPoint.proceed()
         stopWatch.stop()
-
-        log.info("spent time : {}", stopWatch.prettyPrint())
+        log.info("spent time : {}", stopWatch.totalTimeSeconds)
         return proceed
     }
     companion object {
