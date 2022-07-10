@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
     kotlin("plugin.jpa") version "1.6.21"
+    kotlin("kapt") version "1.6.21"
     id("org.asciidoctor.convert") version "2.4.0"
     id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
 }
@@ -33,6 +34,14 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot:spring-boot-starter-batch")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    implementation("com.querydsl:querydsl-jpa")
+    kapt(group = "com.querydsl", name = "querydsl-apt", classifier = "jpa")
+    sourceSets.main {
+        withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
+            kotlin.srcDir("$buildDir/generated/source/kapt/main")
+        }
+    }
 
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
